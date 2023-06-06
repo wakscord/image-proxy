@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"log"
 	"net/http"
-	"regexp"
 	"strconv"
 	"time"
 
@@ -17,15 +16,12 @@ type Config struct {
 	Port int    `env:"PORT" envDefault:"8000"`
 }
 
-var (
-	client = &http.Client{
-		Transport: &http.Transport{
-			MaxConnsPerHost: 0,
-		},
-		Timeout: time.Minute,
-	}
-	urlRegex = regexp.MustCompile(`^https?:\\/\\/(?:www\\.)?[-a-zA-Z0-9@:%._\\+~#=]{1,256}\\.[a-zA-Z0-9()]{1,6}\\b(?:[-a-zA-Z0-9()@:%_\\+.~#?&\\/=]*)$`)
-)
+var client = &http.Client{
+	Transport: &http.Transport{
+		MaxConnsPerHost: 0,
+	},
+	Timeout: time.Minute,
+}
 
 func main() {
 	config := Config{}
@@ -43,7 +39,7 @@ func main() {
 
 func handler(ctx *fasthttp.RequestCtx) {
 	url := string(ctx.URI().PathOriginal())[1:]
-	if url == "" || !urlRegex.MatchString(url) {
+	if url == "" {
 		ctx.SetStatusCode(fasthttp.StatusBadRequest)
 		fmt.Fprint(ctx, "invalid url")
 		return
