@@ -66,5 +66,6 @@ func handler(ctx *fasthttp.RequestCtx) {
 		return
 	}
 
+	ctx.SetContentType(resp.Header.Get("Content-Type"))
 	ctx.SetBodyStream(resp.Body, contentLength)
 }
