@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"io"
 	"log"
 	"net/http"
 	"strconv"
@@ -67,5 +68,17 @@ func handler(ctx *fasthttp.RequestCtx) {
 	}
 
 	ctx.SetContentType(resp.Header.Get("Content-Type"))
-	ctx.SetBodyStream(resp.Body, contentLength)
+	ctx.Response.Header.SetContentLength(contentLength)
+
+	buff := make([]byte, 1)
+	for {
+		_, err := resp.Body.Read(buff)
+		if err == io.EOF {
+			break
+		}
+
+		ctx.Write(buff)
+	}
+
+	resp.Body.Close()
 }
