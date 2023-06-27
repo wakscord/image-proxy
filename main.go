@@ -39,7 +39,7 @@ func main() {
 }
 
 func handler(ctx *fasthttp.RequestCtx) {
-	url := string(ctx.URI().PathOriginal())[1:]
+	url := string(ctx.URI().PathOriginal())[1:] + "?" + string(ctx.URI().QueryString())
 	if url == "" {
 		ctx.SetStatusCode(fasthttp.StatusBadRequest)
 		fmt.Fprint(ctx, "invalid url")
@@ -59,8 +59,9 @@ func handler(ctx *fasthttp.RequestCtx) {
 		fmt.Fprintf(ctx, "uncaught error: %v", err)
 		return
 	}
+	defer resp.Body.Close()
 
-	contentLength, err := strconv.Atoi(resp.Header.Get("Content-length"))
+	contentLength, err := strconv.Atoi(resp.Header.Get("Content-Length"))
 	if err != nil {
 		ctx.SetStatusCode(fasthttp.StatusInternalServerError)
 		fmt.Fprintf(ctx, "uncaught error: %v", err)
@@ -79,6 +80,4 @@ func handler(ctx *fasthttp.RequestCtx) {
 
 		ctx.Write(buff)
 	}
-
-	resp.Body.Close()
 }
