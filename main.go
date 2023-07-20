@@ -39,6 +39,12 @@ func main() {
 }
 
 func handler(ctx *fasthttp.RequestCtx) {
+	if len(ctx.URI().PathOriginal()) == 0 {
+		ctx.SetStatusCode(fasthttp.StatusBadRequest)
+		fmt.Fprint(ctx, "invalid url")
+		return
+	}
+
 	url := string(ctx.URI().PathOriginal())[1:] + "?" + string(ctx.URI().QueryString())
 	if url == "" {
 		ctx.SetStatusCode(fasthttp.StatusBadRequest)
