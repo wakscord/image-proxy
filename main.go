@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"io"
 	"log"
 	"net/http"
 	"strconv"
@@ -20,8 +19,9 @@ type Config struct {
 var client = &http.Client{
 	Transport: &http.Transport{
 		MaxConnsPerHost: 0,
+		ReadBufferSize:  1,
 	},
-	Timeout: time.Minute,
+	Timeout: time.Second * 10,
 }
 
 func main() {
@@ -65,7 +65,7 @@ func handler(ctx *fasthttp.RequestCtx) {
 		fmt.Fprintf(ctx, "uncaught error: %v", err)
 		return
 	}
-	defer resp.Body.Close()
+	// defer resp.Body.Close()
 
 	contentLength, err := strconv.Atoi(resp.Header.Get("Content-Length"))
 	if err != nil {
@@ -77,13 +77,5 @@ func handler(ctx *fasthttp.RequestCtx) {
 	ctx.SetContentType(resp.Header.Get("Content-Type"))
 	ctx.Response.Header.SetContentLength(contentLength)
 
-	buff := make([]byte, 1)
-	for {
-		_, err := resp.Body.Read(buff)
-		if err == io.EOF {
-			break
-		}
-
-		ctx.Write(buff)
-	}
+	ctx.SetBodyStream(resp.Body, contentLength)
 }
